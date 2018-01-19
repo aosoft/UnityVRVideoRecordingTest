@@ -239,6 +239,7 @@ MonoBehaviour:
   RenderTarget: {fileID: 8400000, guid: 00580a0a1f1f07d4b9fb95b19e28dea7, type: 2}
   CubemapSize: 1024
   RenderInStereo: 0
+  StereoSeparation: 0.065
 --- !u!114 &854447688
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -253,6 +254,7 @@ MonoBehaviour:
   RenderTarget: {fileID: 8400000, guid: 15d442ff94c4f7c4daf568a1d30e9d97, type: 2}
   CubemapSize: 1024
   RenderInStereo: 1
+  StereoSeparation: 0.065
 --- !u!1 &1038230808
 GameObject:
   m_ObjectHideFlags: 0

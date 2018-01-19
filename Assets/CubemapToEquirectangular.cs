@@ -8,6 +8,7 @@ public class CubemapToEquirectangular : MonoBehaviour
 	public RenderTexture RenderTarget;
 	public int CubemapSize = 1024;
 	public bool RenderInStereo = false;
+	public float StereoSeparation = 0.065f;
 
 	private Camera _camera;
 	private Material _material;
@@ -36,6 +37,9 @@ public class CubemapToEquirectangular : MonoBehaviour
 
 		if (RenderInStereo)
 		{
+			var tmpStereoSepration = _camera.stereoSeparation;
+			var tmpStereoTargetEye = _camera.stereoTargetEye;
+			_camera.stereoSeparation = StereoSeparation;
 			_camera.stereoTargetEye = StereoTargetEyeMask.Both;
 
 			_camera.RenderToCubemap(_cubemap, 63, Camera.MonoOrStereoscopicEye.Left);
@@ -45,11 +49,12 @@ public class CubemapToEquirectangular : MonoBehaviour
 			_camera.RenderToCubemap(_cubemap, 63, Camera.MonoOrStereoscopicEye.Right);
 			SetRenderTargetArea(false, true);
 			Graphics.Blit(_cubemap, RenderTarget, _material);
+
+			_camera.stereoSeparation = tmpStereoSepration;
+			_camera.stereoTargetEye = tmpStereoTargetEye;
 		}
 		else
 		{
-			_camera.stereoTargetEye = StereoTargetEyeMask.None;
-
 			_camera.RenderToCubemap(_cubemap);
 			SetRenderTargetArea(false, false);
 			Graphics.Blit(_cubemap, RenderTarget, _material);
