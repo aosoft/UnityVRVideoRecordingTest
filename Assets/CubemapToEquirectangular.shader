@@ -14,6 +14,7 @@ Shader "Conversion/CubemapToEquirectangular" {
 				#pragma vertex vert
 				#pragma fragment frag
 				#pragma fragmentoption ARB_precision_hint_fastest
+				#pragma multi_compile _ RENDER_LEFT RENDER_RIGHT RENDER_TOP RENDER_BOTTOM
 				//#pragma fragmentoption ARB_precision_hint_nicest
 				#include "UnityCG.cginc"
 
@@ -26,11 +27,21 @@ Shader "Conversion/CubemapToEquirectangular" {
 				};
 		
 				samplerCUBE _MainTex;
+				uniform float4x4 _Matrix;
 
 				v2f vert( appdata_img v )
 				{
 					v2f o;
 					o.pos = UnityObjectToClipPos(v.vertex);
+#if RENDER_LEFT
+					o.pos.y = o.pos.x / 2 - 0.5;
+#elif RENDER_RIGHT
+					o.pos.y = o.pos.x / 2 + 0.5;
+#elif RENDER_TOP
+					o.pos.y = o.pos.y / 2 - 0.5;
+#elif RENDER_BOTTOM
+					o.pos.y = o.pos.y / 2 + 0.5;
+#endif
 					o.uv = v.texcoord.xy * float2(TWOPI, PI);
 					return o;
 				}
@@ -39,13 +50,13 @@ Shader "Conversion/CubemapToEquirectangular" {
 				{
 					float theta = i.uv.y;
 					float phi = i.uv.x;
-					float3 unit = float3(0,0,0);
+					float4 unit = float4(0,0,0,1);
 
 					unit.x = sin(phi) * sin(theta) * -1;
 					unit.y = cos(theta) * -1;
 					unit.z = cos(phi) * sin(theta) * -1;
 
-					return texCUBE(_MainTex, unit);
+					return texCUBE(_MainTex, mul(_Matrix, unit).xyz);
 				}
 			ENDCG
 		}
