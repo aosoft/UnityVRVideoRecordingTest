@@ -32,7 +32,7 @@ public class CubemapToEquirectangular : MonoBehaviour
 			return;
 		}
 
-		var matrix = Matrix4x4.Rotate(_camera.transform.localRotation);
+		var matrix = Matrix4x4.Rotate(_camera.transform.rotation);
 		_material.SetMatrix("_Matrix", matrix);
 
 		if (RenderInStereo)
