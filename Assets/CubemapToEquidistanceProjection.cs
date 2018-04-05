@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Camera))]
-public class CubemapToEquirectangular : MonoBehaviour
+public class CubemapToEquidistanceProjection : MonoBehaviour
 {
 	public RenderTexture RenderTarget;
 	public int CubemapSize = 1024;
@@ -19,7 +19,7 @@ public class CubemapToEquirectangular : MonoBehaviour
 	{
 		_camera = GetComponent<Camera>();
 
-		_material = new Material(Shader.Find("Conversion/CubemapToEquirectangular"));
+		_material = new Material(Shader.Find("Conversion/CubemapToEquidistanceProjection"));
 		_cubemap = new RenderTexture(CubemapSize, CubemapSize, 24, RenderTextureFormat.ARGB32);
 		_cubemap.dimension = UnityEngine.Rendering.TextureDimension.Cube;
 	}
