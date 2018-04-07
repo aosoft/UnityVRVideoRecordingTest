@@ -76,10 +76,10 @@ public class CubemapToEquidistanceProjection : MonoBehaviour
 		}
 	}
 
-	private void SetRenderTargetArea(bool top, bool bottom)
+	private void SetRenderTargetArea(bool left, bool right)
 	{
-		SetEnableKeyword(_material, "RENDER_TOP", top);
-		SetEnableKeyword(_material, "RENDER_BOTTOM", bottom);
+		SetEnableKeyword(_material, "RENDER_LEFT", left);
+		SetEnableKeyword(_material, "RENDER_RIGHT", right);
 	}
 
 	private void SetEnableKeyword(Material material, string keyword, bool flag)

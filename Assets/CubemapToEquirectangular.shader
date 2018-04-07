@@ -34,9 +34,9 @@ Shader "Conversion/CubemapToEquirectangular" {
 					v2f o;
 					o.pos = UnityObjectToClipPos(v.vertex);
 #if RENDER_LEFT
-					o.pos.y = o.pos.x / 2 - 0.5;
+					o.pos.x = o.pos.x / 2 - 0.5;
 #elif RENDER_RIGHT
-					o.pos.y = o.pos.x / 2 + 0.5;
+					o.pos.x = o.pos.x / 2 + 0.5;
 #elif RENDER_TOP
 					o.pos.y = o.pos.y / 2 - 0.5;
 #elif RENDER_BOTTOM
