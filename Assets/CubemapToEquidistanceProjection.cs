@@ -34,6 +34,7 @@ public class CubemapToEquidistanceProjection : MonoBehaviour
 
 		var matrix = Matrix4x4.Rotate(_camera.transform.localRotation);
 		_material.SetMatrix("_Matrix", matrix);
+		_material.EnableKeyword("ANGLEFUNC_EQUISOLIDANGLE");
 
 		if (RenderInStereo)
 		{
@@ -43,11 +44,11 @@ public class CubemapToEquidistanceProjection : MonoBehaviour
 			_camera.stereoTargetEye = StereoTargetEyeMask.Both;
 
 			_camera.RenderToCubemap(_cubemap, 63, Camera.MonoOrStereoscopicEye.Left);
-			SetRenderTargetArea(true, false);
+			SetViewport(new Vector2(0.5f, 1.0f), new Vector2(-0.5f, 0.0f));
 			Graphics.Blit(_cubemap, RenderTarget, _material);
 
 			_camera.RenderToCubemap(_cubemap, 63, Camera.MonoOrStereoscopicEye.Right);
-			SetRenderTargetArea(false, true);
+			SetViewport(new Vector2(0.5f, 1.0f), new Vector2(0.5f, 0.0f));
 			Graphics.Blit(_cubemap, RenderTarget, _material);
 
 			_camera.stereoSeparation = tmpStereoSepration;
@@ -56,7 +57,7 @@ public class CubemapToEquidistanceProjection : MonoBehaviour
 		else
 		{
 			_camera.RenderToCubemap(_cubemap);
-			SetRenderTargetArea(false, false);
+			SetViewport(new Vector2(1.0f, 1.0f), new Vector2(0.0f, 0.0f));
 			Graphics.Blit(_cubemap, RenderTarget, _material);
 		}
 	}
@@ -76,10 +77,9 @@ public class CubemapToEquidistanceProjection : MonoBehaviour
 		}
 	}
 
-	private void SetRenderTargetArea(bool left, bool right)
+	private void SetViewport(Vector2 scale, Vector2 offset)
 	{
-		SetEnableKeyword(_material, "RENDER_LEFT", left);
-		SetEnableKeyword(_material, "RENDER_RIGHT", right);
+		_material.SetVector("_ScaleOffset", new Vector4(scale.x, scale.y, offset.x, offset.y));
 	}
 
 	private void SetEnableKeyword(Material material, string keyword, bool flag)
