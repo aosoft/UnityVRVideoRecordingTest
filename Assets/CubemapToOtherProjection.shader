@@ -1,6 +1,6 @@
 // Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
 
-Shader "Conversion/CubemapToEquidistanceProjection" {
+Shader "Conversion/CubemapToOtherProjection" {
   Properties {
 		_MainTex ("Cubemap (RGB)", CUBE) = "" {}
 	}
