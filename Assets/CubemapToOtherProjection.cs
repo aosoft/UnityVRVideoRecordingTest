@@ -13,9 +13,15 @@ public enum ProjectionType
 {
 	Equirectangular_360 = 0,
 	Equirectangular_180,
-	FishEye_Equidistance,
-	FishEye_EquisolidAngle,
-	FishEye_Orthogonal
+	FishEye_Circumference,
+	FishEye_Diagonal
+}
+
+public enum FishEyeType
+{
+	Equidistance,
+	EquisolidAngle,
+	Orthogonal
 }
 
 [RequireComponent(typeof(Camera))]
@@ -24,6 +30,7 @@ public class CubemapToOtherProjection : MonoBehaviour
 	public RenderTexture RenderTarget;
 	public int CubemapSize = 1024;
 	public ProjectionType ProjectionType = ProjectionType.Equirectangular_360;
+	public FishEyeType FishEyeType = FishEyeType.Equidistance;
 	public bool RenderInStereo = false;
 	public float StereoSeparation = 0.065f;
 
@@ -31,6 +38,7 @@ public class CubemapToOtherProjection : MonoBehaviour
 	private Camera _camera;
 	private Material _material;
 	private RenderTexture _cubemap;
+
 
 	// Use this for initialization
 	void Start()
@@ -61,7 +69,6 @@ public class CubemapToOtherProjection : MonoBehaviour
 					SetEnableProjFishEye(false);
 					SetEnableEquiSolidAngle(false);
 					SetEnableOrthogal(false);
-					SetEquirectangularScale(2.0f);
 				}
 				break;
 
@@ -71,32 +78,44 @@ public class CubemapToOtherProjection : MonoBehaviour
 					SetEnableProjFishEye(false);
 					SetEnableEquiSolidAngle(false);
 					SetEnableOrthogal(false);
-					SetEquirectangularScale(1.0f);
 				}
 				break;
 
-			case ProjectionType.FishEye_Equidistance:
+			case ProjectionType.FishEye_Circumference:
 				{
 					SetUVScaleOffset(2.0f, 2.0f, -1.0f, -1.0f);
 					SetEnableProjFishEye(true);
+					SetFishEyeDiameterScale(1.0f);
+				}
+				break;
+
+			case ProjectionType.FishEye_Diagonal:
+				{
+					SetUVScaleOffset(2.0f, 2.0f, -1.0f, -1.0f);
+					SetEnableProjFishEye(true);
+					SetFishEyeDiameterScale(1.0f / Mathf.Sqrt(2));
+				}
+				break;
+		}
+
+		switch (FishEyeType)
+		{
+			case FishEyeType.Equidistance:
+				{
 					SetEnableEquiSolidAngle(false);
 					SetEnableOrthogal(false);
 				}
 				break;
 
-			case ProjectionType.FishEye_EquisolidAngle:
+			case FishEyeType.EquisolidAngle:
 				{
-					SetUVScaleOffset(2.0f, 2.0f, -1.0f, -1.0f);
-					SetEnableProjFishEye(true);
 					SetEnableEquiSolidAngle(true);
 					SetEnableOrthogal(false);
 				}
 				break;
 
-			case ProjectionType.FishEye_Orthogonal:
+			case FishEyeType.Orthogonal:
 				{
-					SetUVScaleOffset(2.0f, 2.0f, -1.0f, -1.0f);
-					SetEnableProjFishEye(true);
 					SetEnableEquiSolidAngle(false);
 					SetEnableOrthogal(true);
 				}
@@ -184,10 +203,11 @@ public class CubemapToOtherProjection : MonoBehaviour
 		_material.SetVector("_UVScaleOffset", new Vector4(scaleX, scaleY, offsetX, offsetY));
 	}
 
-	private void SetEquirectangularScale(float scale)
+	private void SetFishEyeDiameterScale(float scale)
 	{
-		_material.SetFloat("_EquirectangularScale", scale);
+		_material.SetFloat("_FishEyeDiameterScale", scale);
 	}
+
 
 	private void SetEnableKeyword(string keyword, bool flag)
 	{

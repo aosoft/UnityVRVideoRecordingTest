@@ -219,13 +219,13 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 854447682}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.3, z: -4.92}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
+  m_LocalPosition: {x: 0, y: 1.2, z: 5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!114 &854447687
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -269,7 +269,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   RenderTarget: {fileID: 8400000, guid: aecc292d158537248901b19047108c3f, type: 2}
   CubemapSize: 1024
-  ProjectionType: 1
+  ProjectionType: 0
+  FishEyeType: 0
   RenderInStereo: 1
   StereoSeparation: 0.065
 --- !u!1 &1038230808

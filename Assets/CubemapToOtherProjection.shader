@@ -32,6 +32,7 @@ Shader "Conversion/CubemapToOtherProjection" {
 				uniform float4x4 _Matrix;
 				uniform float4 _PositionScaleOffset;
 				uniform float4 _UVScaleOffset;
+				uniform float _FishEyeDiameterScale;
 
 				v2f vert( appdata_img v )
 				{
@@ -49,7 +50,7 @@ Shader "Conversion/CubemapToOtherProjection" {
 
 #if PROJ_FISHEYE
 
-					float len = length(i.uv);
+					float len = length(i.uv) * _FishEyeDiameterScale;
 					if (len > 1.0)
 					{
 						return fixed4(0.0, 0.0, 0.0, 1.0);
