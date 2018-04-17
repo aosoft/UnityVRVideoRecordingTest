@@ -22,6 +22,7 @@ Shader "Conversion/CubemapToOtherProjection" {
 				#define PI     3.141592653589793
 				#define TWOPI  6.283185307179587
 				#define PIDIV2 1.570796326794897
+				#define SIN45  0.707106781186548
 
 				struct v2f {
 					float4 pos : POSITION;
@@ -57,9 +58,9 @@ Shader "Conversion/CubemapToOtherProjection" {
 					}
 
 #if ANGLEFUNC_EQUISOLIDANGLE
-					float ang_yz = 2.0 * asin(len / 2.0) * PIDIV2;
+					float ang_yz = 2.0 * asin(len * SIN45);
 #elif ANGLEFUNC_ORTHGONAL
-					float ang_yz = asin(len) * PIDIV2;
+					float ang_yz = asin(len);
 #else
 					float ang_yz = len * PIDIV2;
 #endif
