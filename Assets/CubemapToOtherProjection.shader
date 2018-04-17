@@ -57,9 +57,9 @@ Shader "Conversion/CubemapToOtherProjection" {
 					}
 
 #if ANGLEFUNC_EQUISOLIDANGLE
-					float ang_yz = 2.0 * asin(len / 2.0);
+					float ang_yz = 2.0 * asin(len / 2.0) * PIDIV2;
 #elif ANGLEFUNC_ORTHGONAL
-					float ang_yz = asin(len);
+					float ang_yz = asin(len) * PIDIV2;
 #else
 					float ang_yz = len * PIDIV2;
 #endif
