@@ -31,35 +31,54 @@ public class CubemapToOtherProjection : MonoBehaviour
 	public int CubemapSize = 1024;
 	public ProjectionType ProjectionType = ProjectionType.Equirectangular_360;
 	public FishEyeType FishEyeType = FishEyeType.Equidistance;
+	public bool UseUnityInternalCubemapRenderer = false;
+	public bool LinearToSRGB = false;
 	public bool RenderInStereo = false;
 	public float StereoSeparation = 0.065f;
-
+	public bool CorrectCameraPositionInStereoRendering = false;
 
 	private Camera _camera;
 	private Material _material;
 	private RenderTexture _cubemap;
-
+	private CubemapRenderer _cubemapRenderer;
 
 	// Use this for initialization
 	void Start()
 	{
 		_camera = GetComponent<Camera>();
 
-		_material = new Material(Shader.Find("Conversion/CubemapToOtherProjection"));
+		_material = new Material(Shader.Find("Unlit/CubemapToOtherProjection"));
 		_cubemap = new RenderTexture(CubemapSize, CubemapSize, 24, RenderTextureFormat.ARGB32);
 		_cubemap.dimension = UnityEngine.Rendering.TextureDimension.Cube;
+
+		if (!UseUnityInternalCubemapRenderer)
+		{
+			_cubemapRenderer = new CubemapRenderer(CubemapSize);
+		}
+	}
+
+	private void LateUpdate()
+	{
+		if (RenderTarget != null)
+		{
+			//StartCoroutine(InternalUpdateAsync());
+			InternalUpdate();
+		}
+	}
+
+	IEnumerator InternalUpdateAsync()
+	{
+		yield return new WaitForEndOfFrame();
+		InternalUpdate();
 	}
 
 	// Update is called once per frame
-	void Update()
+	void InternalUpdate()
 	{
 		if (RenderTarget == null)
 		{
 			return;
 		}
-
-		var matrix = Matrix4x4.Rotate(_camera.transform.localRotation);
-		_material.SetMatrix("_Matrix", matrix);
 
 		switch (ProjectionType)
 		{
@@ -132,34 +151,24 @@ public class CubemapToOtherProjection : MonoBehaviour
 
 			if (ProjectionType == ProjectionType.Equirectangular_360)
 			{
-				_camera.RenderToCubemap(_cubemap, 63, Camera.MonoOrStereoscopicEye.Left);
-				SetPositionScaleOffset(1.0f, 0.5f, 0.0f, -0.5f);
-				Graphics.Blit(_cubemap, RenderTarget, _material);
-
-				_camera.RenderToCubemap(_cubemap, 63, Camera.MonoOrStereoscopicEye.Right);
-				SetPositionScaleOffset(1.0f, 0.5f, 0.0f, 0.5f);
-				Graphics.Blit(_cubemap, RenderTarget, _material);
+				RenderToPanoramaView(ProjectionType, Camera.MonoOrStereoscopicEye.Left, 1.0f, 0.5f, 0.0f, -0.5f);
+				RenderToPanoramaView(ProjectionType, Camera.MonoOrStereoscopicEye.Right, 1.0f, 0.5f, 0.0f, 0.5f);
 			}
 			else
 			{
-				_camera.RenderToCubemap(_cubemap, 63, Camera.MonoOrStereoscopicEye.Left);
-				SetPositionScaleOffset(0.5f, 1.0f, -0.5f, 0.0f);
-				Graphics.Blit(_cubemap, RenderTarget, _material);
-
-				_camera.RenderToCubemap(_cubemap, 63, Camera.MonoOrStereoscopicEye.Right);
-				SetPositionScaleOffset(0.5f, 1.0f, 0.5f, 0.0f);
-				Graphics.Blit(_cubemap, RenderTarget, _material);
+				RenderToPanoramaView(ProjectionType, Camera.MonoOrStereoscopicEye.Left, 0.5f, 1.0f, -0.5f, 0.0f);
+				RenderToPanoramaView(ProjectionType, Camera.MonoOrStereoscopicEye.Right, 0.5f, 1.0f, 0.5f, 0.0f);
 			}
-
 
 			_camera.stereoSeparation = tmpStereoSepration;
 			_camera.stereoTargetEye = tmpStereoTargetEye;
 		}
 		else
 		{
-			_camera.RenderToCubemap(_cubemap);
-			SetPositionScaleOffset(1.0f, 1.0f, 0.0f, 0.0f);
-			Graphics.Blit(_cubemap, RenderTarget, _material);
+			RenderToPanoramaView(ProjectionType, Camera.MonoOrStereoscopicEye.Mono, 1.0f, 1.0f, 0.0f, 0.0f);
+
+			//_cubemapRenderer.RenderCubemap(_camera, 0.1f);
+			//Graphics.Blit(_cubemapRenderer.Cubemap, RenderTarget, _material);
 		}
 	}
 
@@ -176,7 +185,62 @@ public class CubemapToOtherProjection : MonoBehaviour
 			Destroy(_cubemap);
 			_cubemap = null;
 		}
+
+		if (_cubemapRenderer != null)
+		{
+			_cubemapRenderer.Dispose();
+			_cubemapRenderer = null;
+		}
 	}
+
+	private void RenderToPanoramaView(ProjectionType projectionType, Camera.MonoOrStereoscopicEye eye, float scaleX, float scaleY, float offsetX, float offsetY)
+	{
+		if (UseUnityInternalCubemapRenderer)
+		{
+			SetEnableLinearToSRGB(LinearToSRGB);
+			_camera.RenderToCubemap(_cubemap, 63, eye);
+
+			SetPositionScaleOffset(scaleX, scaleY, offsetX, offsetY);
+			var q = Quaternion.identity;
+			var t = _camera.transform;
+			while (t != null)
+			{
+				q = q * t.localRotation;
+				t = t.parent;
+			}
+			_material.SetMatrix("_Matrix", Matrix4x4.Rotate(q));
+			Graphics.Blit(_cubemap, RenderTarget, _material);
+		}
+		else
+		{
+			float ipdOffset = 0.0f;
+			switch (eye)
+			{
+				case Camera.MonoOrStereoscopicEye.Left:
+					{
+						ipdOffset = -StereoSeparation / 2.0f;
+					}
+					break;
+
+				case Camera.MonoOrStereoscopicEye.Right:
+					{
+						ipdOffset = StereoSeparation / 2.0f;
+					}
+					break;
+			}
+			_cubemapRenderer.RenderCubemap(
+				_camera,
+				projectionType == ProjectionType.Equirectangular_360 ? 63 : 63 - (1 << (int)CubemapFace.NegativeZ),
+				ipdOffset,
+				LinearToSRGB,
+				CorrectCameraPositionInStereoRendering);
+
+			SetPositionScaleOffset(scaleX, scaleY, offsetX, offsetY);
+			_material.SetMatrix("_Matrix", Matrix4x4.identity);
+			Graphics.Blit(_cubemapRenderer.Cubemap, RenderTarget, _material);
+		}
+	}
+
 
 	private void SetEnableProjFishEye(bool flag)
 	{
@@ -191,6 +255,11 @@ public class CubemapToOtherProjection : MonoBehaviour
 	private void SetEnableOrthogal(bool flag)
 	{
 		SetEnableKeyword("ANGLEFUNC_ORTHGONAL", flag);
+	}
+
+	private void SetEnableLinearToSRGB(bool flag)
+	{
+		SetEnableKeyword("LINEAR_TO_SRGB", flag);
 	}
 
 	private void SetPositionScaleOffset(float scaleX, float scaleY, float offsetX, float offsetY)
