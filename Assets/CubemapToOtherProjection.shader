@@ -16,7 +16,7 @@ Shader "Unlit/CubemapToOtherProjection"
 			#pragma fragment frag
 			#pragma multi_compile _ PROJ_FISHEYE 
 			#pragma multi_compile _ ANGLEFUNC_EQUISOLIDANGLE ANGLEFUNC_ORTHGONAL
-			#pragma multi_compile _ LINEAR_TO_SRGB 
+			#pragma multi_compile _ LINEAR_TO_SRGB LINEAR_TO_BT709
 
 			#include "UnityCG.cginc"
 
@@ -34,7 +34,6 @@ Shader "Unlit/CubemapToOtherProjection"
 			struct v2f
 			{
 				float2 uv : TEXCOORD0;
-				UNITY_FOG_COORDS(1)
 				float4 vertex : SV_POSITION;
 			};
 
@@ -89,6 +88,9 @@ Shader "Unlit/CubemapToOtherProjection"
 #if LINEAR_TO_SRGB
 				//	Linear to sRGB
 				color = color < 0.0031308 ? 12.92 * color : 1.055 * pow(color, 1.0 / 2.4) - 0.055;
+#elif LINEAR_TO_BT709
+				//	Linear to BT.709
+				color = color < 0.018 ? 4.5 * color : 1.099 * pow(color, 0.45) - 0.099;
 #endif
 				return float4(color, 1.0);
 			}

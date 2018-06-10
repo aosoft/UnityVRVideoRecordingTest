@@ -1,7 +1,14 @@
 ﻿using UnityEngine;
 using UnityEngine.Rendering;
 
-class CubemapRenderer : System.IDisposable
+public enum GammaConvertType
+{
+	None = 0,
+	Linear_to_sRGB,
+	Linear_to_BT709
+}
+
+public class CubemapRenderer : System.IDisposable
 {
 	private CommandBuffer[] _commandBuffers = null;
 	private Shader _shader = null;
@@ -121,7 +128,7 @@ class CubemapRenderer : System.IDisposable
 		}
 	}
 
-	public void RenderCubemap(Camera camera, int faceMask, float ipdOffset, bool linearToSRGB, bool correctCameraPositionInStereoRendering)
+	public void RenderCubemap(Camera camera, int faceMask, float ipdOffset, GammaConvertType gammaConvert, bool correctCameraPositionInStereoRendering)
 	{
 		if (_tempRT != null)
 		{
@@ -151,7 +158,29 @@ class CubemapRenderer : System.IDisposable
 			_tempRT.Create();
 		}
 
-		SetEnableKeyword("LINEAR_TO_SRGB", linearToSRGB);
+		switch (gammaConvert)
+		{
+			case GammaConvertType.Linear_to_sRGB:
+				{
+					SetEnableLinearToSRGB(true);
+					SetEnableLinearToBT709(false);
+				}
+				break;
+
+			case GammaConvertType.Linear_to_BT709:
+				{
+					SetEnableLinearToSRGB(false);
+					SetEnableLinearToBT709(true);
+				}
+				break;
+
+			default:
+				{
+					SetEnableLinearToSRGB(false);
+					SetEnableLinearToBT709(false);
+				}
+				break;
+		}
 
 		var orgLocalRotation = camera.transform.localRotation;
 		var orgLocalPosition = camera.transform.localPosition;
@@ -207,6 +236,16 @@ class CubemapRenderer : System.IDisposable
 		}
 	}
 
+
+	private void SetEnableLinearToSRGB(bool flag)
+	{
+		SetEnableKeyword("LINEAR_TO_SRGB", flag);
+	}
+
+	private void SetEnableLinearToBT709(bool flag)
+	{
+		SetEnableKeyword("LINEAR_TO_BT709", flag);
+	}
 
 	private void SetEnableKeyword(string keyword, bool flag)
 	{

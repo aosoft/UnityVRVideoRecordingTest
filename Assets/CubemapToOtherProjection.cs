@@ -32,7 +32,7 @@ public class CubemapToOtherProjection : MonoBehaviour
 	public ProjectionType ProjectionType = ProjectionType.Equirectangular_360;
 	public FishEyeType FishEyeType = FishEyeType.Equidistance;
 	public bool UseUnityInternalCubemapRenderer = false;
-	public bool LinearToSRGB = false;
+	public GammaConvertType GammaConvertType = GammaConvertType.None;
 	public bool RenderInStereo = false;
 	public float StereoSeparation = 0.065f;
 	public bool CorrectCameraPositionInStereoRendering = false;
@@ -197,7 +197,30 @@ public class CubemapToOtherProjection : MonoBehaviour
 	{
 		if (UseUnityInternalCubemapRenderer)
 		{
-			SetEnableLinearToSRGB(LinearToSRGB);
+			switch (GammaConvertType)
+			{
+				case GammaConvertType.Linear_to_sRGB:
+					{
+						SetEnableLinearToSRGB(true);
+						SetEnableLinearToBT709(false);
+					}
+					break;
+
+				case GammaConvertType.Linear_to_BT709:
+					{
+						SetEnableLinearToSRGB(false);
+						SetEnableLinearToBT709(true);
+					}
+					break;
+
+				default:
+					{
+						SetEnableLinearToSRGB(false);
+						SetEnableLinearToBT709(false);
+					}
+					break;
+			}
+
 			_camera.RenderToCubemap(_cubemap, 63, eye);
 
 			SetPositionScaleOffset(scaleX, scaleY, offsetX, offsetY);
@@ -232,11 +255,13 @@ public class CubemapToOtherProjection : MonoBehaviour
 				_camera,
 				projectionType == ProjectionType.Equirectangular_360 ? 63 : 63 - (1 << (int)CubemapFace.NegativeZ),
 				ipdOffset,
-				LinearToSRGB,
+				GammaConvertType,
 				CorrectCameraPositionInStereoRendering);
 
 			SetPositionScaleOffset(scaleX, scaleY, offsetX, offsetY);
 			_material.SetMatrix("_Matrix", Matrix4x4.identity);
+			SetEnableLinearToSRGB(false);
+			SetEnableLinearToBT709(false);
 			Graphics.Blit(_cubemapRenderer.Cubemap, RenderTarget, _material);
 		}
 	}
@@ -260,6 +285,11 @@ public class CubemapToOtherProjection : MonoBehaviour
 	private void SetEnableLinearToSRGB(bool flag)
 	{
 		SetEnableKeyword("LINEAR_TO_SRGB", flag);
+	}
+
+	private void SetEnableLinearToBT709(bool flag)
+	{
+		SetEnableKeyword("LINEAR_TO_BT709", flag);
 	}
 
 	private void SetPositionScaleOffset(float scaleX, float scaleY, float offsetX, float offsetY)
