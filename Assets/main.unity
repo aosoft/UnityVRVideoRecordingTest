@@ -267,12 +267,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93423be8dfc58884087b8b4937cebce4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  RenderTarget: {fileID: 8400000, guid: aecc292d158537248901b19047108c3f, type: 2}
+  RenderTarget: {fileID: 8400000, guid: 00580a0a1f1f07d4b9fb95b19e28dea7, type: 2}
   CubemapSize: 1024
   ProjectionType: 0
   FishEyeType: 0
-  RenderInStereo: 1
+  UseUnityInternalCubemapRenderer: 0
+  GammaConvertType: 0
+  RenderInStereo: 0
   StereoSeparation: 0.065
+  CorrectCameraPositionInStereoRendering: 0
 --- !u!1 &1038230808
 GameObject:
   m_ObjectHideFlags: 0
