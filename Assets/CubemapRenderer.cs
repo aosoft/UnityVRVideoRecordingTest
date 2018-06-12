@@ -77,11 +77,9 @@ public class CubemapRenderer : System.IDisposable
 		for (int i = 0; i < _faces.Length; i++)
 		{
 			var commandBuffer = new CommandBuffer();
-			commandBuffer.GetTemporaryRT(tid, -1, -1, 0, FilterMode.Bilinear);
-			commandBuffer.Blit(BuiltinRenderTextureType.CurrentActive, tid);
+			commandBuffer.SetGlobalTexture(tid, BuiltinRenderTextureType.CameraTarget);
 			commandBuffer.SetRenderTarget(_cubemap, 0, _faces[i].Face);
 			commandBuffer.DrawMesh(_mesh, Matrix4x4.identity, _material, 0, 0);
-			commandBuffer.ReleaseTemporaryRT(tid);
 			_commandBuffers[i] = commandBuffer;
 		}
 	}
